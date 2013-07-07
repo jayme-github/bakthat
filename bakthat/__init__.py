@@ -286,7 +286,18 @@ def backup(filename=os.getcwd(), destination=None, profile="default", config=CON
     # Useful only when using bakmanager.io hook
     backup_key = key
 
-    password = kwargs.get("password", os.environ.get("BAKTHAT_PASSWORD"))
+    # Check if a password is set in the configuration.
+    if conf:
+        password = conf.get("password", None)
+    else:
+        password = config.get(profile).get("password", None)
+
+    # Password may still be overridden by environment variable BAKTHAT_PASSWORD
+    # or when given as argument
+    if kwargs.get("password", os.environ.get("BAKTHAT_PASSWORD")):
+        password = kwargs.get("password", os.environ.get("BAKTHAT_PASSWORD"))
+
+    # If we still have no password and prompt is not disabled, prompt for it
     if password is None and prompt.lower() != "no":
         password = getpass("Password (blank to disable encryption): ")
         if password:
